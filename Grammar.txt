@@ -1,0 +1,14 @@
+Expression -> WORD '=' Request
+Request -> METHOD URL HEADERS BODY
+METHOD -> POST | GET | PUT | DELETE
+URL -> WORD | WORD ':' PORT
+HEADERS -> HEADER | HEADER HEADERS
+HEADER ->  | "-H" WORD ':' WORD
+BODY -> | '{' FIELDS '}'
+FIELDS -> FIELD | FIELD ',' FIELDS
+FIELD ->  | WOR ':' DWORD | WORD ':'BODY
+WORD -> LETTER | WORD LETTER
+LETTER -> 'a' ... 'Z'
+PORT -> NUMBER | NUMBER PORT
+
+"result1 = PUT | localhost:8080 | -H header:value | {field1: 2,field2: nome}"
