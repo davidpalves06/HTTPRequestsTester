@@ -5,12 +5,13 @@ function getLexicalTokens(input) {
 
     while (currentPosition < input.length) {
         const currentChar = input[currentPosition];
-        if (currentChar == ':') tokens.push({identifier: "COLON"});
+        if (currentChar == ':') tokens.push({identifier: "COLON",value:':'});
         else if (currentChar == '{' || currentChar == '}') tokens.push({identifier: "CURLY BRACES",value:currentChar});
         else if (currentChar == '-') tokens.push({identifier:"DASH"});
-        else if (currentChar == '=') tokens.push({identifier:"EQUAL"});
+        else if (currentChar == '=') tokens.push({identifier:"EQUAL",value:'='});
         else if (currentChar == '|') tokens.push({identifier:"BAR"});
         else if (currentChar == ',') tokens.push({identifier:"COMMA"});
+        else if (currentChar == '.') tokens.push({identifier:"POINT",value:'.'});
         else if (currentChar == 'G' || currentChar == 'P' || currentChar == 'D') {
             if ((method = checkIfMethod(currentChar,input,currentPosition))) {
                 tokens.push({identifier:"METHOD",value:method[0]})
@@ -18,8 +19,9 @@ function getLexicalTokens(input) {
             }
             else tokens.push({identifier:"LETTER",value:currentChar})
         }
-        else if (currentChar.match(/[a-zA-Z]/g)) tokens.push({identifier:"LETTER",value:currentChar});
+        else if (currentChar.match(/[a-zA-Z\/\.?#]/g)) tokens.push({identifier:"LETTER",value:currentChar});
         else if (currentChar.match(/[0-9]/g)) tokens.push({identifier:"NUMBER",value:currentChar});
+        else if (currentChar.match(/\n/)) tokens.push({identifier:"NEWLINE"});
         else if (currentChar.match(/\s/));
         else throw new Error("Input char not recognizable at index " + currentPosition);
         currentPosition++;
