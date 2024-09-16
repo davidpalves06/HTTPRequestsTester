@@ -12,6 +12,7 @@ function getLexicalTokens(input) {
         else if (currentChar == '|') tokens.push({identifier:"BAR"});
         else if (currentChar == ',') tokens.push({identifier:"COMMA"});
         else if (currentChar == '.') tokens.push({identifier:"POINT",value:'.'});
+        else if (currentChar == ';') tokens.push({identifier:"SEMICOLON",value:';'});
         else if (currentChar == 'G' || currentChar == 'P' || currentChar == 'D') {
             if ((method = checkIfMethod(currentChar,input,currentPosition))) {
                 tokens.push({identifier:"METHOD",value:method[0]})
@@ -19,9 +20,15 @@ function getLexicalTokens(input) {
             }
             else tokens.push({identifier:"LETTER",value:currentChar})
         }
+        else if (currentChar == "A") {
+            if (checkIfAssert(input,currentPosition)) {
+                tokens.push({identifier:'ASSERT',value:"ASSERT"});
+                currentPosition += 5;
+            }
+            else tokens.push({identifier:"LETTER",value:currentChar})
+        }
         else if (currentChar.match(/[a-zA-Z\/\.?#]/g)) tokens.push({identifier:"LETTER",value:currentChar});
         else if (currentChar.match(/[0-9]/g)) tokens.push({identifier:"NUMBER",value:currentChar});
-        else if (currentChar.match(/\n/)) tokens.push({identifier:"NEWLINE"});
         else if (currentChar.match(/\s/));
         else throw new Error("Input char not recognizable at index " + currentPosition);
         currentPosition++;
@@ -47,6 +54,12 @@ checkIfMethod = (char,input,currentPosition) => {
         else if (stack.slice(0,3) == "PUT") return [stack,2];
         else return null;
     }
+}
+
+checkIfAssert = (input,currentPosition) => {
+    let word = input.slice(currentPosition,currentPosition + 6);
+    if (word == "ASSERT") return true;
+    else return false;
 }
 
 module.exports = {getLexicalTokens}
