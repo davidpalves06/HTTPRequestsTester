@@ -1,0 +1,12 @@
+{
+  "name": "src",
+  "version": "1.0.0",
+  "description": "",
+  "main": "Evaluator.js",
+  "scripts": {
+    "test": "node Evaluator.js ./TestGrammar.txt"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

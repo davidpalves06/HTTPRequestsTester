@@ -9,6 +9,20 @@ function getLexicalTokens(input) {
         else if (currentChar == '{' || currentChar == '}') tokens.push({identifier: "CURLY BRACES",value:currentChar});
         else if (currentChar == '-') tokens.push({identifier:"DASH"});
         else if (currentChar == '=') tokens.push({identifier:"EQUAL",value:'='});
+        else if (currentChar == '<') {
+            if (input[currentPosition + 1] == '=') {
+                tokens.push({identifier:"LTE",value:'<='});
+                currentPosition++;
+            }
+            else tokens.push({identifier:"LT",value:'<'});
+        }
+        else if (currentChar == '>') {
+            if (input[currentPosition + 1] == '=') {
+                tokens.push({identifier:"GTE",value:'>='});
+                currentPosition++;
+            }
+            else tokens.push({identifier:"GT",value:'>'});
+        }
         else if (currentChar == '|') tokens.push({identifier:"BAR"});
         else if (currentChar == ',') tokens.push({identifier:"COMMA"});
         else if (currentChar == '.') tokens.push({identifier:"POINT",value:'.'});
@@ -62,6 +76,6 @@ checkIfAssert = (input,currentPosition) => {
     else return false;
 }
 
-module.exports = {getLexicalTokens}
-
-
+module.exports = {
+    getLexicalTokens
+}

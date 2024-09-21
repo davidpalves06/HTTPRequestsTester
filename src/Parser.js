@@ -1,9 +1,10 @@
-const { getLexicalTokens } = require("./LexicalAnalyzer.js")
+const {getLexicalTokens} = require('./LexicalAnalyzer.js')
 
 
 class TokenParser {
-    constructor(tokens) {
-        this.tokens = tokens;
+    constructor(input) {
+        let lexicalTokens = getLexicalTokens(input);
+        this.tokens = lexicalTokens;
         this.position = 0;
     }
 
@@ -16,7 +17,7 @@ class TokenParser {
     }
 
     isEOF() {
-        if (this.position >= tokens.length) return true
+        if (this.position >= this.tokens.length) return true
         return false;
     }
 
@@ -26,7 +27,7 @@ class TokenParser {
           this.advanceToken();
           return token;
         } else {
-          throw new Error(`Expected ${identifier}, but found ${token ? token.identifier : 'EOF'}`);
+          throw new Error(`Expected ${identifier}, but found ${token ? token.identifier : 'EOF'} at ${this.position}`);
         }
     }
 
@@ -39,6 +40,7 @@ class TokenParser {
     }
     parseExpressions() {
         let expressionQueue = []
+        
         while (!this.isEOF()) {
             expressionQueue.push(this.parseExpression());
         }
@@ -49,35 +51,53 @@ class TokenParser {
         let expressionNode = {}
         let token = this.currentToken();
         if (token.identifier == 'LETTER') {
-            let resultVariable = "";
-            while((token.identifier == 'LETTER' || token.identifier == 'NUMBER')) {
-                resultVariable += token.value;
-                this.advanceToken();
-                token = this.currentToken();
-            }
-            this.expect("EQUAL");
-            expressionNode.type = "REQUEST";
-            expressionNode.resultVariable = resultVariable;
-            expressionNode.request = this.parseRequest();
+            token = this.parseHTTPRequest( expressionNode);
         }
         else if (token.identifier == "ASSERT") {
-            this.expect("ASSERT")
-            token = this.currentToken();
-            let assertField = "";
-            while((token.identifier == 'LETTER' || token.identifier == 'NUMBER')) {
-                assertField += token.value;
-                this.advanceToken();
-                token = this.currentToken();
-            }
-            expressionNode.type = "ASSERT";
-            expressionNode.assertField = assertField;
-            this.expect("BAR");
-            expressionNode.headers = this.parseHeaders();
-            expressionNode.body = this.parseBody();
+            token = this.parseASSERT( expressionNode);
         }
-        else throw new Error("Expression is malformed!");
+        else {
+            throw new Error("Expression is malformed!");
+        }
+        
         this.expect("SEMICOLON");
         return expressionNode;
+    }
+
+    parseHTTPRequest(expressionNode) {
+        let resultVariable = "";
+        let token = this.currentToken()
+        while ((token.identifier == 'LETTER' || token.identifier == 'NUMBER')) {
+            resultVariable += token.value;
+            this.advanceToken();
+            token = this.currentToken();
+        }
+        this.expect("EQUAL");
+        expressionNode.type = "REQUEST";
+        expressionNode.resultVariable = resultVariable;
+        expressionNode.request = this.parseRequest();
+        return token;
+    }
+
+    parseASSERT( expressionNode) {
+        this.expect("ASSERT");
+        let token = this.currentToken();
+        let assertField = "";
+        expressionNode.type = "ASSERT";
+        while ((token.identifier == 'LETTER' || token.identifier == 'NUMBER')) {
+            assertField += token.value;
+            this.advanceToken();
+            token = this.currentToken();
+        }
+        expressionNode.assertField = assertField;
+        this.expect("BAR")
+        expressionNode.headers = this.parseHeaders();
+        token = this.currentToken();
+        while (token.identifier != "BAR" && token.identifier != "SEMICOLON") {
+            expressionNode.body = this.parseField();
+            token = this.currentToken();
+        }
+        return token;
     }
 
     parseRequest() {
@@ -168,9 +188,32 @@ class TokenParser {
         if (curly.value != '}') throw new Error("Expected closing curly braces");
         return body;
     }
+
+    parseField() {
+        let fieldName = "";
+        let fieldValue = "";
+        let fieldOperator;
+        let token = this.currentToken();
+        
+        while(token.identifier != "EQUAL" && token.identifier != "LT" 
+            && token.identifier != "GT" && token.identifier != "GTE" && token.identifier != "LTE") {
+            fieldName += token.value;
+            this.advanceToken();
+            token = this.currentToken();
+        }
+
+        fieldOperator = token.identifier;
+        this.advanceToken();
+        token = this.currentToken()
+        while(token.identifier != 'BAR' && token.identifier != 'SEMICOLON') {
+            fieldValue += token.value;
+            this.advanceToken()
+            token = this.currentToken()
+        }
+        if (token.identifier == 'BAR') this.advanceToken();
+        return {fieldName,fieldName,fieldOperator};
+    }
 }
 
-let tokens = getLexicalTokens(`result1 = GET | https://localhost.com/path/test:8080 | -H header:value | {field1: {field3:{field4:2},field5:3},field2: nome};
-    ASSERT result1 | -H header:value | {field1: {field3:{field4:2},field5:3},field2: nome};`);
-const tokenParser = new TokenParser(tokens);
-console.log(tokenParser.parseGrammar());
+
+module.exports = {TokenParser}

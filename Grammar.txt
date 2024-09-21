@@ -11,4 +11,4 @@ WORD -> LETTER | WORD LETTER
 LETTER -> 'a' ... 'Z'
 PORT -> NUMBER | NUMBER PORT
 
-"result1 = PUT | localhost:8080 | -H header:value | {field1: 2,field2: nome}"
+"result1 = PUT | localhost:8080 | -H header:value | {field1: 2,field2: nome}

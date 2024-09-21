@@ -1,0 +1,2 @@
+result1 = GET | https://localhost.com/path/test:8080 | -H header:value | {field1: {field3:{field4:2},field5:3},field2: nome};
+ASSERT result1 | -H header:value | field2>nome;
