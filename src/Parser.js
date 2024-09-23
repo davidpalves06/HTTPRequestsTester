@@ -1,7 +1,6 @@
-const {getLexicalTokens} = require('./LexicalAnalyzer.js')
+import {getLexicalTokens} from './LexicalAnalyzer.js'
 
-
-class TokenParser {
+export class TokenParser {
     constructor(input) {
         let lexicalTokens = getLexicalTokens(input);
         this.tokens = lexicalTokens;
@@ -107,7 +106,16 @@ class TokenParser {
         this.expect("BAR");
         requestNode = {...requestNode,...this.parseURL()};
         this.expect("BAR");
-        requestNode = {...requestNode,...this.parseHeaders(),...this.parseBody()};
+        requestNode.headers = this.parseHeaders();
+        console.log(this.currentToken());
+        
+        requestNode.body = this.parseBody();
+        console.log(requestNode.body);
+        
+        if (requestNode.method == "GET" && Object.keys(requestNode.body).length != 0) {
+            console.error("GET Request can't have a body");
+            process.exit(1)
+        }
         return requestNode;
     }
 
@@ -140,13 +148,17 @@ class TokenParser {
             }
             this.advanceToken();
             token = this.currentToken()
-            while(token.identifier != 'BAR' && token.identifier != 'CURLY BRACES' && token.identifier != 'DASH') {
+            while(token.identifier != 'BAR' && token.identifier != 'CURLY BRACES' && token.identifier != 'DASH' && token.identifier != 'SEMICOLON') {
                 headerValue += token.value;
                 this.advanceToken()
                 token = this.currentToken()
             }
-            this.expect("BAR")
-            token = this.currentToken()
+            if (token.identifier != "BAR" && token.identifier != "SEMICOLON") {
+                console.error("Expected end of headers but found " + token.identifier);
+                process.exit(1);                
+            }
+            if (token.identifier == "BAR") this.advanceToken();
+            token = this.currentToken();
             headers[headerName] = headerValue;
         }
         return headers;
@@ -154,7 +166,9 @@ class TokenParser {
 
     parseBody() {
         let token = this.currentToken();
-        let body = {}
+        let body = {};
+        
+        if (token.identifier == "SEMICOLON") return body;
         let curly = this.expect("CURLY BRACES");
         if (curly.value != '{') throw new Error("Expected opening curly braces.");
         token = this.currentToken();
@@ -214,6 +228,3 @@ class TokenParser {
         return {fieldName,fieldName,fieldOperator};
     }
 }
-
-
-module.exports = {TokenParser}
