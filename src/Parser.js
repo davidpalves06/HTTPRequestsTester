@@ -92,8 +92,9 @@ export class TokenParser {
         this.expect("BAR")
         expressionNode.headers = this.parseHeaders();
         token = this.currentToken();
+        expressionNode.body = [];
         while (token.identifier != "BAR" && token.identifier != "SEMICOLON") {
-            expressionNode.body = this.parseField();
+            expressionNode.body = [...expressionNode.body,this.parseField()];
             token = this.currentToken();
         }
         return token;
@@ -107,10 +108,7 @@ export class TokenParser {
         requestNode = {...requestNode,...this.parseURL()};
         this.expect("BAR");
         requestNode.headers = this.parseHeaders();
-        console.log(this.currentToken());
-        
         requestNode.body = this.parseBody();
-        console.log(requestNode.body);
         
         if (requestNode.method == "GET" && Object.keys(requestNode.body).length != 0) {
             console.error("GET Request can't have a body");
@@ -225,6 +223,6 @@ export class TokenParser {
             token = this.currentToken()
         }
         if (token.identifier == 'BAR') this.advanceToken();
-        return {fieldName,fieldName,fieldOperator};
+        return {fieldName,fieldValue,fieldOperator};
     }
 }

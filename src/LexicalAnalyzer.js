@@ -34,7 +34,7 @@ export function getLexicalTokens(input) {
         const currentChar = input[currentPosition];
         if (currentChar == ':') tokens.push({identifier: "COLON",value:':'});
         else if (currentChar == '{' || currentChar == '}') tokens.push({identifier: "CURLY BRACES",value:currentChar});
-        else if (currentChar == '-') tokens.push({identifier:"DASH"});
+        else if (currentChar == '-') tokens.push({identifier:"DASH",value: "-"});
         else if (currentChar == '=') tokens.push({identifier:"EQUAL",value:'='});
         else if (currentChar == '<') {
             if (input[currentPosition + 1] == '=') {
@@ -68,6 +68,18 @@ export function getLexicalTokens(input) {
                 currentPosition += 5;
             }
             else tokens.push({identifier:"LETTER",value:currentChar})
+        }
+        else if (currentChar == "\"") {
+            let newPosition = currentPosition + 1;
+            let lookAhead = input[newPosition];
+            let string = "";
+            while (lookAhead != "\"") {
+                string += lookAhead;
+                newPosition++;
+                lookAhead = input[newPosition];
+            }
+            tokens.push({identifier:"STRING",value: string});
+            currentPosition = newPosition;
         }
         else if (currentChar.match(/[a-zA-Z\/\.?#]/g)) tokens.push({identifier:"LETTER",value:currentChar});
         else if (currentChar.match(/[0-9]/g)) tokens.push({identifier:"NUMBER",value:currentChar});

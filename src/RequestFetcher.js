@@ -20,7 +20,7 @@ const fetchWithTimeout = (url, options, timeout = 5000) => {
 };
 
 export const fetchRequest = async (requestParams) => {
-    console.log("Request to " + requestParams.url);
+    console.log("Sending request to " + requestParams.url);
     return fetchWithTimeout(requestParams.url,{
         method: requestParams.method,
         headers: requestParams.headers,

@@ -1,2 +1,4 @@
-result1 = GET | http://localhost:8080/path/test | -H header:value | -H header2:top;
-ASSERT result1 | -H header:value | field2>nome;
+result1 = GET | https://jsonplaceholder.typicode.com/todos/1 | -H header:value | -H header2:top;
+ASSERT result1 | -H server:cloudflare | id<=2 | title <="delectus aut autem";
+result2 = GET | https://dummyjson.com/products  | -H header:value | -H header2:top;
+ASSERT result2 | -H server:BobTheBuilder | id<=2 | title <="delectus aut autem";
