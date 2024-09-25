@@ -40,7 +40,6 @@ for (let i = 0; i < grammarTree.length; i++) {
         });
         requestResult.body = responseBody;
         requestResults[grammarNode.resultVariable] = requestResult;
-        log(requestResult);
     }
     else {
         log(`Asserting value: ${grammarNode.assertField}`);
@@ -60,44 +59,53 @@ for (let i = 0; i < grammarTree.length; i++) {
         const bodyToAssert = resultToAssert.body;
         for(const field of grammarNode.body) {
             let {fieldName,fieldValue,fieldOperator} = field;
-            assertField(fieldOperator, bodyToAssert, fieldName, fieldValue, i);
+            let splitedFieldName = fieldName.split(".");
+            assertField(fieldOperator, bodyToAssert, fieldName,splitedFieldName, fieldValue, i);
         }
     }
 }
 log("---------------------------------------------------");
 
 
-function assertField(fieldOperator, bodyToAssert, fieldName, fieldValue, i) {
+function assertField(fieldOperator, bodyToAssert, fullFieldName ,splitedFieldName, fieldValue, i) {
+    let currBodyToAssert = bodyToAssert;
+    for (const fieldName of splitedFieldName) {
+        let regexMatch = fieldName.match(/(\w+)\[(\d+)\]/);
+        if (regexMatch) {
+            currBodyToAssert = currBodyToAssert[regexMatch[1]][Number.parseInt(regexMatch[2])];
+        }
+        else currBodyToAssert = currBodyToAssert[fieldName];
+    }
     switch (fieldOperator) {
         case "EQUAL":
-            if (bodyToAssert[fieldName] != fieldValue) {
-                error(`Field ${fieldName} is wrong \u{274C}.\nExpected ${fieldValue} but got ${bodyToAssert[fieldName]}.\nAssertion failed in step ${i + 1}.`);
+            if (currBodyToAssert != fieldValue) {
+                error(`Field ${fullFieldName} is wrong \u{274C}.\nExpected ${fieldValue} but got ${currBodyToAssert}.\nAssertion failed in step ${i + 1}.`);
                 process.exit(-1);
-            } else log(`Field ${fieldName} is correct \u{2705}`);
+            } else log(`Field ${fullFieldName} is correct \u{2705}`);
             break;
         case "LT":
-            if (!(bodyToAssert[fieldName] < fieldValue)) {
-                error(`Field ${fieldName} is wrong \u{274C}.\nExpected ${fieldValue} > ${bodyToAssert[fieldName]}.\nAssertion failed in step ${i + 1}.`);
+            if (!(currBodyToAssert < fieldValue)) {
+                error(`Field ${fullFieldName} is wrong \u{274C}.\nExpected ${fieldValue} > ${currBodyToAssert}.\nAssertion failed in step ${i + 1}.`);
                 process.exit(-1);
-            } else log(`Field ${fieldName} is correct \u{2705}`);
+            } else log(`Field ${fullFieldName} is correct \u{2705}`);
             break;
         case "GT":
-            if (!(bodyToAssert[fieldName] > fieldValue)) {
-                error(`Field ${fieldName} is wrong \u{274C}.\nExpected ${fieldValue} < ${bodyToAssert[fieldName]}.\nAssertion failed in step ${i + 1}.`);
+            if (!(currBodyToAssert > fieldValue)) {
+                error(`Field ${fullFieldName} is wrong \u{274C}.\nExpected ${fieldValue} < ${currBodyToAssert}.\nAssertion failed in step ${i + 1}.`);
                 process.exit(-1);
-            } else log(`Field ${fieldName} is correct \u{2705}`);
+            } else log(`Field ${fullFieldName} is correct \u{2705}`);
             break;
         case "LTE":
-            if (!(bodyToAssert[fieldName] <= fieldValue)) {
-                error(`Field ${fieldName} is wrong \u{274C}.\nExpected ${fieldValue} >= ${bodyToAssert[fieldName]}.\nAssertion failed in step ${i + 1}.`);
+            if (!(currBodyToAssert <= fieldValue)) {
+                error(`Field ${fullFieldName} is wrong \u{274C}.\nExpected ${fieldValue} >= ${currBodyToAssert}.\nAssertion failed in step ${i + 1}.`);
                 process.exit(-1);
-            } else log(`Field ${fieldName} is correct \u{2705}`);
+            } else log(`Field ${fullFieldName} is correct \u{2705}`);
             break;
         case "GTE":
-            if (!(bodyToAssert[fieldName] >= fieldValue)) {
-                error(`Field ${fieldName} is wrong \u{274C}.\nExpected ${fieldValue} <= ${bodyToAssert[fieldName]}.\nAssertion failed in step ${i + 1}.`);
+            if (!(currBodyToAssert >= fieldValue)) {
+                error(`Field ${fullFieldName} is wrong \u{274C}.\nExpected ${fieldValue} <= ${currBodyToAssert}.\nAssertion failed in step ${i + 1}.`);
                 process.exit(-1);
-            } else log(`Field ${fieldName} is correct \u{2705}`);
+            } else log(`Field ${fullFieldName} is correct \u{2705}`);
             break;
         default:
             error("Unknow Operator. Exiting...");

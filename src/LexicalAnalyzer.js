@@ -54,6 +54,7 @@ export function getLexicalTokens(input) {
         else if (currentChar == ',') tokens.push({identifier:"COMMA"});
         else if (currentChar == '.') tokens.push({identifier:"POINT",value:'.'});
         else if (currentChar == ';') tokens.push({identifier:"SEMICOLON",value:';'});
+        else if (currentChar == '[' || currentChar == ']') tokens.push({identifier:"STRAIGHT BRACKETS",value:currentChar});
         else if (currentChar == 'G' || currentChar == 'P' || currentChar == 'D') {
             const method = checkIfMethod(currentChar,input,currentPosition);
             if (method) {
